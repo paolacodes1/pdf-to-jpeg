@@ -8,8 +8,9 @@ Double-click **PDF to JPEG.app**, pick a PDF, then pick a folder to save the ima
 
 ```bash
 brew install poppler
-pip3 install pdf2image
 ```
+
+On first launch the app creates its own Python environment in `~/Library/Application Support/PDF to JPEG/` and installs `pdf2image` there, so nothing is installed system-wide.
 
 ## Command line
 

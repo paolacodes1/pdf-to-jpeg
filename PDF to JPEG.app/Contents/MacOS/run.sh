@@ -4,6 +4,21 @@
 APP_DIR="$(dirname "$(dirname "$(dirname "$0")")")"
 SCRIPT_DIR="$APP_DIR/Contents/Resources"
 
+# Apps opened from Finder don't get Homebrew on PATH (needed for poppler)
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Private Python environment for this app, created on first run
+VENV="$HOME/Library/Application Support/PDF to JPEG/venv"
+if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -c "import pdf2image" 2>/dev/null; then
+    osascript -e 'display notification "Setting up for first use…" with title "PDF to JPEG"'
+    mkdir -p "$(dirname "$VENV")"
+    python3 -m venv "$VENV" && "$VENV/bin/python" -m pip install --quiet pdf2image
+    if ! "$VENV/bin/python" -c "import pdf2image" 2>/dev/null; then
+        osascript -e 'display alert "PDF to JPEG" message "Could not install pdf2image. Check your internet connection and try again." as warning'
+        exit 1
+    fi
+fi
+
 # Use AppleScript to show file picker
 PDF_FILE=$(osascript -e 'tell application "System Events"
     activate
@@ -30,7 +45,7 @@ fi
 
 # Run the Python script
 cd "$SCRIPT_DIR"
-python3 pdf_to_jpeg.py "$PDF_FILE" "$OUTPUT_DIR" 2>&1
+"$VENV/bin/python" pdf_to_jpeg.py "$PDF_FILE" "$OUTPUT_DIR" 2>&1
 
 # Show completion message
 RESULT=$?
